@@ -1,3 +1,20 @@
+/**
+ * @module core/types
+ * @layer core
+ *
+ * 所有模块共享的领域原语（Domain Primitives）。
+ *
+ * 职责：
+ *   - 定义全局 ID 类型别名，防止原始类型混用
+ *   - 定义消息内容的 discriminated union
+ *   - 定义 ModelConfig、StreamChunk、UsageStats 等跨层共享结构
+ *
+ * 约束：
+ *   - 不得 import 任何其他模块
+ *   - 不得包含任何运行时逻辑（纯类型声明）
+ *   - 所有其他层均可依赖本文件，本文件不依赖任何层
+ */
+
 // ─── Shared Domain Primitives ────────────────────────────────────────────────
 
 export type ModelId = string;

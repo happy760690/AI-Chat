@@ -6,7 +6,6 @@
  * 初始化时自动创建第一个会话。
  */
 
-import { useEffect } from 'react';
 import { useStore } from '../store';
 import { SessionSidebar } from './components/SessionSidebar';
 import { ChatWindow } from './components/ChatWindow';
@@ -14,15 +13,14 @@ import { getSupportedModels, switchModel } from './services/engineService';
 
 const MODELS = getSupportedModels();
 
+// 模块级初始化，只执行一次，不受 React 渲染周期影响
+const _initSession = (() => {
+  const session = useStore.getState().createSession(MODELS[0]);
+  switchModel(session.id, MODELS[0]);
+})();
+
 export function App() {
   const activeSessionId = useStore(s => s.activeSessionId);
-  const createSession   = useStore(s => s.createSession);
-
-  // 启动时创建默认会话
-  useEffect(() => {
-    const session = createSession(MODELS[0]);
-    switchModel(session.id, MODELS[0]);
-  }, []);
 
   return (
     <div className="flex h-screen bg-gray-950 text-gray-100 overflow-hidden">

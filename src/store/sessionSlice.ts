@@ -4,14 +4,9 @@
  *
  * 会话状态 Slice，管理会话列表与当前激活会话。
  *
- * 职责：
- *   - 创建、删除、更新会话
- *   - 维护 activeSessionId
- *   - 维护每个 session 绑定的 modelId
- *
  * 约束：
+ *   - sessions 用数组存储，避免 Zustand selector 中 Map 引用不稳定问题
  *   - 不调用任何 core/engine，只管理纯状态
- *   - 不依赖 UI 组件
  */
 
 import type { StateCreator } from 'zustand';
@@ -20,7 +15,7 @@ import type { ISession, SessionStatus } from '../core/session/ISession';
 import type { RootStore } from './types';
 
 export interface SessionSlice {
-  sessions: Map<SessionId, ISession>;
+  sessions: ISession[];
   activeSessionId: SessionId | null;
   setActiveSession(id: SessionId): void;
   createSession(modelId: ModelId): ISession;
@@ -32,7 +27,7 @@ export interface SessionSlice {
 let sessionCounter = 0;
 
 export const createSessionSlice: StateCreator<RootStore, [], [], SessionSlice> = (set, get) => ({
-  sessions: new Map(),
+  sessions: [],
   activeSessionId: null,
 
   setActiveSession(id) {
@@ -52,34 +47,30 @@ export const createSessionSlice: StateCreator<RootStore, [], [], SessionSlice> =
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
-    set(state => {
-      const sessions = new Map(state.sessions);
-      sessions.set(id, session);
-      return { sessions, activeSessionId: id };
-    });
+    set(state => ({
+      sessions: [...state.sessions, session],
+      activeSessionId: id,
+    }));
     return session;
   },
 
   deleteSession(id) {
     set(state => {
-      const sessions = new Map(state.sessions);
-      sessions.delete(id);
+      const sessions = state.sessions.filter(s => s.id !== id);
       const activeSessionId =
         state.activeSessionId === id
-          ? (sessions.keys().next().value ?? null)
+          ? (sessions[0]?.id ?? null)
           : state.activeSessionId;
       return { sessions, activeSessionId };
     });
   },
 
   updateSession(id, patch) {
-    set(state => {
-      const sessions = new Map(state.sessions);
-      const existing = sessions.get(id);
-      if (!existing) return {};
-      sessions.set(id, { ...existing, ...patch, updatedAt: Date.now() });
-      return { sessions };
-    });
+    set(state => ({
+      sessions: state.sessions.map(s =>
+        s.id === id ? { ...s, ...patch, updatedAt: Date.now() } : s
+      ),
+    }));
   },
 
   setSessionStatus(id, status) {

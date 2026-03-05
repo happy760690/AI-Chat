@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useRef } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useStore } from '../../store';
 import { useChat } from '../hooks/useChat';
 import { MessageBubble } from './MessageBubble';
@@ -19,8 +20,16 @@ interface Props {
 }
 
 export function ChatWindow({ sessionId }: Props) {
-  const messages    = useStore(s => s.getActivePath(sessionId));
-  const session     = useStore(s => s.sessions.get(sessionId));
+  const messages = useStore(
+    useShallow(s => {
+      const tree = s.trees[sessionId];
+      if (!tree) return [];
+      return tree.activePathNodeIds
+        .map(id => tree.nodes[id])
+        .filter((m): m is NonNullable<typeof m> => m !== undefined);
+    })
+  );
+  const session     = useStore(s => s.sessions.find(s => s.id === sessionId));
   const branchFrom  = useStore(s => s.branchFrom);
   const bottomRef   = useRef<HTMLDivElement>(null);
 

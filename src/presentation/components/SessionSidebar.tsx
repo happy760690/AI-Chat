@@ -11,7 +11,7 @@ import { getSupportedModels, switchModel } from '../services/engineService';
 const MODELS = getSupportedModels();
 
 export function SessionSidebar() {
-  const sessions       = useStore(s => Array.from(s.sessions.values()));
+  const sessions       = useStore(s => s.sessions);
   const activeId       = useStore(s => s.activeSessionId);
   const createSession  = useStore(s => s.createSession);
   const deleteSession  = useStore(s => s.deleteSession);

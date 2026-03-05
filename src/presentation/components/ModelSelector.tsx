@@ -15,7 +15,7 @@ interface Props {
 }
 
 export function ModelSelector({ sessionId }: Props) {
-  const session = useStore(s => s.sessions.get(sessionId));
+  const session = useStore(s => s.sessions.find(s => s.id === sessionId));
   const currentModel = session?.modelConfig.modelId ?? MODELS[0];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {

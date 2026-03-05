@@ -16,21 +16,30 @@
  */
 
 import type { PluginId, SessionId } from '../types';
+import type { IMessage } from '../message/IMessage';
 
-// ─── Plugin Manager Port ──────────────────────────────────────────────────────
+// ─── Lifecycle Hooks ──────────────────────────────────────────────────────────
 
 export type PluginLifecycleHook =
-  | 'beforeSend'
-  | 'afterReceive'
-  | 'onToolCall'
-  | 'onToolResult'
+  | 'beforeBuildContext'   // 上下文裁剪前，可注入额外消息
+  | 'beforeSend'           // 发送给模型前，可修改消息列表
+  | 'afterReceive'         // 收到模型响应后，可后处理内容
+  | 'onError'              // 发生错误时，可上报或降级
+  | 'onToolCall'           // Tool 被调用前
+  | 'onToolResult'         // Tool 返回结果后
   | 'onSessionCreate'
   | 'onSessionDestroy';
 
+// ─── Plugin Context ───────────────────────────────────────────────────────────
+
 export interface PluginContext {
   sessionId: SessionId;
+  messages?: IMessage[];
+  error?: unknown;
   [key: string]: unknown;
 }
+
+// ─── Plugin Interface ─────────────────────────────────────────────────────────
 
 export interface IPlugin {
   readonly id: PluginId;
@@ -38,6 +47,8 @@ export interface IPlugin {
   readonly hooks: PluginLifecycleHook[];
   onHook(hook: PluginLifecycleHook, ctx: PluginContext): Promise<PluginContext>;
 }
+
+// ─── Plugin Manager Interface ─────────────────────────────────────────────────
 
 export interface IPluginManager {
   register(plugin: IPlugin): void;

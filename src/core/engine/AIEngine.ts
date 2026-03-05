@@ -46,11 +46,8 @@ export class AIEngine implements IAIEngine {
   }
 
   async *sendMessage(options: SendMessageOptions): AsyncIterable<StreamChunk> {
-    const { sessionId, message } = options;
+    const { sessionId, message, signal } = options;
     this.setStatus(sessionId, 'running');
-
-    const controller = this.abortRegistry.create(sessionId);
-    const signal = controller.signal;
 
     try {
       // 1. beforeBuildContext 钩子
@@ -83,17 +80,12 @@ export class AIEngine implements IAIEngine {
       await this.opts.pluginManager.runHook('onError', { sessionId, error: err });
       this.setStatus(sessionId, 'error');
       throw err;
-    } finally {
-      this.abortRegistry.cleanup(sessionId);
     }
   }
 
   async *runAgent(options: AgentRunOptions): AsyncIterable<AgentStep> {
-    const { sessionId, agentId } = options;
+    const { sessionId, agentId, signal } = options;
     this.setStatus(sessionId, 'running');
-
-    const controller = this.abortRegistry.create(sessionId);
-    const signal = controller.signal;
 
     try {
       const runner = this.opts.getAgentRunner(agentId);

@@ -18,41 +18,13 @@
  * 依赖方向：store → core（单向）
  */
 
-import type { SessionId, ModelId, StreamStatus } from '../core/types';
-import type { ISession } from '../core/session/ISession';
-import type { IMessage, IMessageTree } from '../core/message/IMessage';
+// RootStore 类型由各 slice 文件的实际接口组合而成，避免重复定义
+export type { SessionSlice } from './sessionSlice';
+export type { MessageSlice } from './messageSlice';
+export type { StreamSlice } from './streamSlice';
 
-// ─── Session Store Slice ──────────────────────────────────────────────────────
-
-export interface SessionSlice {
-  sessions: Map<SessionId, ISession>;
-  activeSessionId: SessionId | null;
-  setActiveSession(id: SessionId): void;
-  createSession(modelId: ModelId): ISession;
-  deleteSession(id: SessionId): void;
-  updateSession(id: SessionId, patch: Partial<ISession>): void;
-}
-
-// ─── Message Store Slice ──────────────────────────────────────────────────────
-
-export interface MessageSlice {
-  trees: Map<SessionId, IMessageTree>;
-  appendMessage(sessionId: SessionId, message: IMessage): void;
-  updateStreamStatus(sessionId: SessionId, messageId: string, status: StreamStatus): void;
-  appendDelta(sessionId: SessionId, messageId: string, delta: string): void;
-  branchFrom(sessionId: SessionId, nodeId: string, message: IMessage): void;
-  setActivePath(sessionId: SessionId, nodeId: string): void;
-}
-
-// ─── Stream Store Slice ───────────────────────────────────────────────────────
-
-export interface StreamSlice {
-  controllers: Map<SessionId, AbortController>;
-  createController(sessionId: SessionId): AbortController;
-  abort(sessionId: SessionId): void;
-  cleanup(sessionId: SessionId): void;
-}
-
-// ─── Root Store ───────────────────────────────────────────────────────────────
+import type { SessionSlice } from './sessionSlice';
+import type { MessageSlice } from './messageSlice';
+import type { StreamSlice } from './streamSlice';
 
 export type RootStore = SessionSlice & MessageSlice & StreamSlice;

@@ -15,7 +15,8 @@
  *   - countTokens 用于 RAG 上下文裁剪，必须实现
  */
 
-import type { ModelConfig, StreamChunk, IMessage } from '../types';
+import type { ModelConfig, StreamChunk } from '../types';
+import type { IMessage } from '../message/IMessage';
 
 // ─── Model Adapter Port ───────────────────────────────────────────────────────
 
